@@ -1,0 +1,5 @@
+# age private keys never go into git
+*.key
+# decrypted copies, if you make any
+*.dec.yaml
+*.plain.yaml

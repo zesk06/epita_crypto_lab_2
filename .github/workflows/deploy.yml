@@ -1,0 +1,28 @@
+name: deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  # No pull_request trigger: a PR (especially from a fork) must never reach the prod key.
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install sops (pinned version, checksum verified)
+        run: |
+          curl -sSL -o sops https://github.com/getsops/sops/releases/download/v3.13.3/sops-v3.13.3.linux.amd64
+          echo "e5bec3346a873ae91d871550f3e698c1aad962aff462a080e40f25fde17fef6b  sops" | sha256sum -c -
+          sudo install -m 0755 sops /usr/local/bin/sops
+
+      - name: Deploy
+        env:
+          # The ci age private key (one AGE-SECRET-KEY-... line), stored as a repository secret.
+          SOPS_AGE_KEY: ${{ secrets.SOPS_AGE_KEY }}
+        run: ./deploy.sh
