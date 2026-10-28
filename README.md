@@ -11,11 +11,11 @@ provided CI workflow decrypt them and deploy, **without leaking them**.
 | File | What it does |
 |---|---|
 | `deploy.sh` | Decrypts `secrets/prod/database.yaml` with sops and "deploys" with those credentials |
-| `.github/workflows/deploy.yml` | On every push to `main`: installs sops and runs `deploy.sh`, with the CI age key from the `SOPS_AGE_KEY` secret |
+| `.github/workflows/deploy.yml` | On every push to `main`: scans the files for secrets with betterleaks, then runs `deploy.sh` with the CI age key from the `SOPS_AGE_KEY` secret |
 | `.gitignore` | Keeps every `*.key` file (age private keys) out of git |
 
-What you add, following the lab slides: `.sops.yaml`, `secrets/prod/database.yaml`,
-`secrets/dev/database.yaml`, `SECRETS.md`.
+What you add, following the lab slides: `.githooks/pre-commit` (betterleaks), `.sops.yaml`,
+`secrets/prod/database.yaml`, `secrets/dev/database.yaml`, `SECRETS.md`.
 
 ## Before you start
 
@@ -57,8 +57,8 @@ SOPS_AGE_KEY_FILE=bob.key ./deploy.sh secrets/dev/database.yaml  # accepted
    `sops updatekeys secrets/prod/database.yaml`.
 3. In your GitHub repository: **Settings → Secrets and variables → Actions → New repository secret**,
    name `SOPS_AGE_KEY`, value: the `AGE-SECRET-KEY-...` line of `ci.key`.
-4. Push. The run must end with `deployment accepted (HTTP 200)`, and the log must never show the
-   credentials.
+4. Push. The scan step must find no leaks, the run must end with `deployment accepted (HTTP 200)`,
+   and the log must never show the credentials.
 
 ## Things to try
 

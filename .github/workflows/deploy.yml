@@ -16,10 +16,23 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install sops (pinned version, checksum verified)
+        working-directory: ${{ runner.temp }} # downloads stay out of the scanned checkout
         run: |
           curl -sSL -o sops https://github.com/getsops/sops/releases/download/v3.13.3/sops-v3.13.3.linux.amd64
           echo "e5bec3346a873ae91d871550f3e698c1aad962aff462a080e40f25fde17fef6b  sops" | sha256sum -c -
           sudo install -m 0755 sops /usr/local/bin/sops
+
+      - name: Install betterleaks (pinned version, checksum verified)
+        working-directory: ${{ runner.temp }}
+        run: |
+          curl -sSL -o betterleaks.tar.gz https://github.com/betterleaks/betterleaks/releases/download/v1.9.0/betterleaks_1.9.0_linux_x64.tar.gz
+          echo "f8b185a39ffcece2a1ca82bf3a4e7435cd81963ffd16b7a9128daf75f35f6de7  betterleaks.tar.gz" | sha256sum -c -
+          tar xzf betterleaks.tar.gz betterleaks && sudo install -m 0755 betterleaks /usr/local/bin/betterleaks
+
+      - name: Scan the checked-out files for secrets
+        # `dir` scans the files as they are in this commit, not the git history.
+        # SOPS-encrypted values are not flagged; a plaintext key or password is, and the job stops here.
+        run: betterleaks --no-banner dir . --redact --verbose
 
       - name: Deploy
         env:
