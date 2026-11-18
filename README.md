@@ -26,6 +26,8 @@ What you add, following the lab slides: `.githooks/pre-commit` (betterleaks), `.
    git remote set-url origin git@github.com:<you>/<your-repo>.git
    git push -u origin main
    ```
+   If you **fork** this repository instead, GitHub disables Actions on the fork: open the **Actions** tab of
+   your fork and enable them, or the workflow never runs. No run at all costs 4 points.
 2. Generate the age keys **inside this folder** (lab step 1). They are ignored by git.
 
 ## The file deploy.sh expects
@@ -64,4 +66,6 @@ SOPS_AGE_KEY_FILE=bob.key ./deploy.sh secrets/dev/database.yaml  # accepted
 
 - **Break it on purpose:** add `echo "$password"` to `deploy.sh` and push. GitHub masks the exact secret
   value in the log, but not `echo "$password" | base64`. Log masking is best-effort.
+  Then clean up before you submit: remove these lines from `deploy.sh`, rotate the prod password (it is in
+  the run log), and push. The last run must show no secret.
 - **Who decrypted what, when?** With an age key in a CI secret, you cannot answer. A cloud KMS key can.
